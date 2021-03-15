@@ -25,6 +25,8 @@
 #include <algorithm>
 #include <unordered_set>
 #include "pgm_index.hpp"
+#include <iostream>
+
 
 namespace pgm {
 
@@ -257,6 +259,10 @@ public:
             if (level(i).empty())
                 continue;
 
+            // First and last element of current level
+            //std::cout << "Current level " << (int) i << std::endl;
+
+            // Gives a very broad range (start & end of whole level)!
             auto first = level(i).begin();
             auto last = level(i).end();
             if (i >= MinIndexedLevel) {
@@ -264,12 +270,28 @@ public:
                 first = level(i).begin() + range.lo;
                 last = level(i).begin() + range.hi;
             }
-
+            
+            // EARLY EXIT IN CASE OF DELETED
+            // If element has been deleted, we don't need to go down to last index level
+            
+            // Returns an iterator pointing to the first element in the range [first, last) that is greater or equal to value, or last if no such element is found.
             auto it = std::lower_bound(first, last, key);
-            if (it != level(i).end() && it->first == key)
-                return it->deleted() ? end() : iterator(this, i, it);
-        }
 
+            // Found target key (i.e. iterator is not pointing to last element in the current level, and key is equal to search key)
+            if (it != level(i).end() && it->first == key)
+                // entry either not found, or we return pointer to current element
+                if (it->deleted()) {
+                    // KEY HAS BEEN DELETED
+                    std::cout << "DELETED: " << (int) i << std::endl;
+                    return end();
+                } else {
+                    // KEY HAS BEEN FOUND
+                    std::cout << "FOUND: " <<  (int) i << std::endl;
+                    return iterator(this, i, it);
+                }
+        }
+        // KEY HAS NEVER BEEN INSERTED
+        std::cout << "NOT FOUND: " <<  (int) used_levels << std::endl;
         return end();
     }
 
