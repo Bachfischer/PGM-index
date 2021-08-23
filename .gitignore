@@ -170,3 +170,8 @@ CTestTestfile.cmake
 _deps
 
 
+# ignore executables
+examples/playground
+examples/simple
+examples/updates
+experiments/pgm_update_books
